@@ -1,0 +1,13 @@
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+motor>=3.3.2
+pymongo>=4.6.0
+python-multipart>=0.0.6
+Pillow>=10.1.0
+pydantic>=2.5.0
+aiofiles>=23.2.1
+# ML pipeline (vehicle detection + OCR)
+ultralytics>=8.0.0
+easyocr>=1.7.0
+# Plate Recognizer Cloud API client
+requests>=2.31.0
