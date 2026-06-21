@@ -151,9 +151,8 @@ export default function TeamHeadDashboard({ onNavigate }: Props) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <button onClick={() => onNavigate('create-project')} className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-shadow text-left group"><Plus className="w-8 h-8 text-blue-500 mb-3 group-hover:scale-110 transition-transform" /><h3 className="font-semibold text-slate-900">Create New Survey</h3><p className="text-sm text-slate-500 mt-1">Set up a new traffic survey project</p></button>
-        <button onClick={() => onNavigate('monitoring')} className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-shadow text-left group"><BarChart3 className="w-8 h-8 text-emerald-500 mb-3 group-hover:scale-110 transition-transform" /><h3 className="font-semibold text-slate-900">Live Monitoring</h3><p className="text-sm text-slate-500 mt-1">Track active survey operations</p></button>
         <button onClick={() => onNavigate('reports')} className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-shadow text-left group"><BarChart3 className="w-8 h-8 text-amber-500 mb-3 group-hover:scale-110 transition-transform" /><h3 className="font-semibold text-slate-900">Generate Reports</h3><p className="text-sm text-slate-500 mt-1">Download PDF analysis reports</p></button>
       </div>
     </div>

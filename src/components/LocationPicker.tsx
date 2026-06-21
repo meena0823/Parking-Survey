@@ -4,7 +4,7 @@ import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import { Crosshair, Loader2, MapPin, Search } from 'lucide-react';
+import { Crosshair, ChevronDown, ChevronUp, Loader2, MapPin, Search } from 'lucide-react';
 import {
   formatCoordinates,
   reverseGeocode,
@@ -75,6 +75,9 @@ export default function LocationPicker({
   const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  // Mobile: map is hidden by default to save vertical space.
+  // Desktop (md:): map is always visible via `md:block` on the wrapper.
+  const [showMap, setShowMap] = useState(false);
 
   const parsedPosition = useMemo((): [number, number] | null => {
     if (!latitude || !longitude) return null;
@@ -264,7 +267,27 @@ export default function LocationPicker({
         </div>
       )}
 
-      <div>
+      {/* ── Map section ────────────────────────────────────────────────────
+          Mobile (!readOnly): hidden by default; revealed by the toggle button.
+          Mobile (readOnly) : always visible so the confirmed pin is visible.
+          Desktop (md:)     : always visible regardless of readOnly or showMap.
+      ─────────────────────────────────────────────────────────────────────── */}
+
+      {/* Mobile toggle button — only shown on non-readOnly mobile */}
+      {!readOnly && (
+        <button
+          type="button"
+          onClick={() => setShowMap(prev => !prev)}
+          className="md:hidden w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-700 text-slate-200 text-sm font-medium hover:bg-slate-600 transition-colors border border-slate-600"
+        >
+          <MapPin className="w-4 h-4 text-blue-400" />
+          {showMap ? 'Hide Map' : 'Pick Location on Map'}
+          {showMap ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
+      )}
+
+      {/* Map container — hidden on mobile until toggled (or always shown when readOnly) */}
+      <div className={!readOnly ? `${showMap ? 'block' : 'hidden'} md:block` : ''}>
         <label className="block text-sm font-medium text-slate-200 mb-2">
           <MapPin size={16} className="inline mr-2" />
           {readOnly ? 'Selected Location' : 'Pick Location on Map'}

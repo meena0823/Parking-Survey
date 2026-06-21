@@ -389,18 +389,37 @@ export default function EnumeratorInterface({ enumeratorId, project, onLogout }:
   // Enumerator can signal "I'm done" whenever a slot is active (TH sees this in the dashboard)
   const canFinishSlot = !!activeSlot && !hasFinishedCurrent;
 
+  const [finishError, setFinishError] = useState<string | null>(null);
+
   async function finishCurrentSlot() {
     if (!activeSlot || hasFinishedCurrent) return;
     setFinishSubmitting(true);
+    setFinishError(null);
     try {
-      await upsertSlotCompletion({
+      console.log('[finishCurrentSlot] Marking slot done — slot:', activeSlot.id, 'enumerator:', enumeratorId);
+      const result = await upsertSlotCompletion({
         project_id: project.id,
         slot_id: activeSlot.id,
         enumerator_id: enumeratorId,
         status: 'completed',
         completed_at: new Date().toISOString(),
       });
-      setSlotCompletions(await getSlotCompletions(project.id));
+
+      if (!result) {
+        // upsertSlotCompletion returned null → Supabase write failed (error logged inside)
+        console.error('[finishCurrentSlot] DB write returned null. Check [upsertSlotCompletion] log above for Supabase error details.');
+        setFinishError('Could not save. Check your connection or contact the Team Head.');
+      } else {
+        console.log('[finishCurrentSlot] Slot completion saved successfully:', result.id);
+      }
+
+      // Always refresh local state — even on failure it keeps the list consistent
+      const completions = await getSlotCompletions(project.id);
+      console.log('[finishCurrentSlot] Refreshed completions:', completions.length, 'records for project');
+      setSlotCompletions(completions);
+    } catch (err) {
+      console.error('[finishCurrentSlot] Unexpected error:', err);
+      setFinishError('Unexpected error. Please try again.');
     } finally {
       setFinishSubmitting(false);
     }
@@ -1027,13 +1046,16 @@ export default function EnumeratorInterface({ enumeratorId, project, onLogout }:
         )}
 
         {canFinishSlot && activeSlot && (
-          <div className="bg-white rounded-xl border border-emerald-200 p-4">
+          <div className={`bg-white rounded-xl border p-4 ${finishError ? 'border-red-300' : 'border-emerald-200'}`}>
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-slate-900">Slot {activeSlot.slot_number} — Mark as Done</p>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Let the Team Head know you have finished your captures for this slot.
                 </p>
+                {finishError && (
+                  <p className="text-xs text-red-600 mt-1 font-medium">⚠ {finishError}</p>
+                )}
               </div>
               <button
                 type="button"

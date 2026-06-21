@@ -236,378 +236,447 @@ export default function SurveyProjectForm({ onBack, onCreated }: SurveyProjectFo
     { number: 3, label: 'Review & Create' },
   ];
 
+  // ── shared button classes ──────────────────────────────────────────────────
+  const prevBtnClass = (disabled: boolean) =>
+    `flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all ${
+      disabled
+        ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
+        : 'bg-slate-600 text-white hover:bg-slate-500'
+    }`;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
-          >
-            <ArrowLeft size={20} />
-            <span>Back</span>
-          </button>
-          <h1 className="text-2xl font-bold text-white">Create Survey Project</h1>
-          <div className="w-20"></div>
-        </div>
+    <>
+      {/* ── Main scrollable content ────────────────────────────────────────── */}
+      {/* pb-24 md:pb-6 reserves space above the mobile sticky nav */}
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-3 md:p-6 pb-24 md:pb-6">
+        <div className="max-w-4xl mx-auto">
 
-        {/* Step Indicator */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {steps.map((s) => (
-              <div key={s.number} className="flex items-center flex-1">
-                <div
-                  className={`flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm transition-all ${
-                    step >= s.number
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-slate-700 text-slate-400'
-                  }`}
-                >
-                  {step > s.number ? <Check size={20} /> : s.number}
-                </div>
-                <div className="ml-3 flex-1">
-                  <p className={`text-sm font-medium ${step >= s.number ? 'text-white' : 'text-slate-400'}`}>
-                    {s.label}
-                  </p>
-                </div>
-                {s.number < steps.length && (
-                  <div className={`h-1 flex-1 mx-2 ${step > s.number ? 'bg-blue-500' : 'bg-slate-700'}`} />
-                )}
-              </div>
-            ))}
+          {/* ── Header ──────────────────────────────────────────────────────── */}
+          <div className="flex items-center justify-between mb-4 md:mb-8">
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
+            >
+              <ArrowLeft size={20} />
+              <span className="hidden sm:inline">Back</span>
+            </button>
+            <h1 className="text-lg md:text-2xl font-bold text-white">Create Survey Project</h1>
+            {/* spacer keeps title centred */}
+            <div className="w-8 md:w-20" />
           </div>
-        </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg flex items-start gap-3">
-            <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
-            <p className="text-red-100">{error}</p>
+          {/* ── Step indicator — DESKTOP (circles, unchanged) ─────────────── */}
+          <div className="hidden md:block mb-8">
+            <div className="flex items-center justify-between">
+              {steps.map((s) => (
+                <div key={s.number} className="flex items-center flex-1">
+                  <div
+                    className={`flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm transition-all ${
+                      step >= s.number ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-400'
+                    }`}
+                  >
+                    {step > s.number ? <Check size={20} /> : s.number}
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <p className={`text-sm font-medium ${step >= s.number ? 'text-white' : 'text-slate-400'}`}>
+                      {s.label}
+                    </p>
+                  </div>
+                  {s.number < steps.length && (
+                    <div className={`h-1 flex-1 mx-2 ${step > s.number ? 'bg-blue-500' : 'bg-slate-700'}`} />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        )}
 
-        {/* Form Content */}
-        <div className="bg-slate-800 rounded-lg shadow-xl overflow-hidden">
-          {/* Step 1: Project Details */}
-          {step === 1 && (
-            <div className="p-8 space-y-6">
-              <h2 className="text-xl font-bold text-white mb-6">Project Details</h2>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-200 mb-2">
-                    Project Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={projectName}
-                    onChange={(e) => setProjectName(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                    placeholder="e.g., Main Road Survey 2024"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-200 mb-2">
-                    Client Name
-                  </label>
-                  <input
-                    type="text"
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                    placeholder="e.g., City Traffic Department"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">
-                  Purpose
-                </label>
-                <textarea
-                  value={purpose}
-                  onChange={(e) => setPurpose(e.target.value)}
-                  className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"
-                  rows={3}
-                  placeholder="e.g., Traffic volume analysis for peak hours"
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-200 mb-2">
-                    Survey Date *
-                  </label>
-                  <input
-                    type="date"
-                    value={surveyDate}
-                    onChange={(e) => setSurveyDate(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-200 mb-2">
-                    Start Time *
-                  </label>
-                  <input
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-200 mb-2">
-                    End Time *
-                  </label>
-                  <input
-                    type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              <LocationPicker
-                locationName={locationName}
-                latitude={latitude}
-                longitude={longitude}
-                onLocationNameChange={setLocationName}
-                onLatitudeChange={setLatitude}
-                onLongitudeChange={setLongitude}
+          {/* ── Step indicator — MOBILE (progress bar + text) ─────────────── */}
+          <div className="md:hidden mb-4">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs text-slate-400">Step {step} of {steps.length}</span>
+              <span className="text-xs font-semibold text-blue-400">{steps[step - 1].label}</span>
+            </div>
+            <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                style={{ width: `${(step / steps.length) * 100}%` }}
               />
+            </div>
+          </div>
+
+          {/* ── Error message ────────────────────────────────────────────────── */}
+          {error && (
+            <div className="mb-4 md:mb-6 p-3 md:p-4 bg-red-500/20 border border-red-500/50 rounded-lg flex items-start gap-3">
+              <AlertCircle size={18} className="text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-red-100 text-sm">{error}</p>
             </div>
           )}
 
-          {/* Step 2: Survey Parameters */}
-          {step === 2 && (
-            <div className="p-8 space-y-6">
-              <h2 className="text-xl font-bold text-white mb-6">Survey Parameters</h2>
+          {/* ── Form card ────────────────────────────────────────────────────── */}
+          <div className="bg-slate-800 rounded-lg shadow-xl overflow-hidden">
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* ════════════════════════════════════════════════════════════════
+                STEP 1 — Project Details
+            ════════════════════════════════════════════════════════════════ */}
+            {step === 1 && (
+              <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+                <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-6">Project Details</h2>
+
+                {/* Project Name + Client Name
+                    Mobile: single column   Desktop: two columns (unchanged) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                      Project Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={projectName}
+                      onChange={(e) => setProjectName(e.target.value)}
+                      className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      placeholder="e.g., Main Road Survey 2024"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                      Client Name
+                    </label>
+                    <input
+                      type="text"
+                      value={clientName}
+                      onChange={(e) => setClientName(e.target.value)}
+                      className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      placeholder="e.g., City Traffic Department"
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-slate-200 mb-2">
-                    Number of Enumerators *
+                    Purpose
+                  </label>
+                  <textarea
+                    value={purpose}
+                    onChange={(e) => setPurpose(e.target.value)}
+                    className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"
+                    rows={3}
+                    placeholder="e.g., Traffic volume analysis for peak hours"
+                  />
+                </div>
+
+                {/* Date / Start Time / End Time
+                    Mobile: single column   Desktop: three columns (unchanged) */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                      Survey Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={surveyDate}
+                      onChange={(e) => setSurveyDate(e.target.value)}
+                      className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                      Start Time *
+                    </label>
+                    <input
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                      End Time *
+                    </label>
+                    <input
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <LocationPicker
+                  locationName={locationName}
+                  latitude={latitude}
+                  longitude={longitude}
+                  onLocationNameChange={setLocationName}
+                  onLatitudeChange={setLatitude}
+                  onLongitudeChange={setLongitude}
+                />
+              </div>
+            )}
+
+            {/* ════════════════════════════════════════════════════════════════
+                STEP 2 — Survey Parameters
+            ════════════════════════════════════════════════════════════════ */}
+            {step === 2 && (
+              <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+                <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-6">Survey Parameters</h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                      Number of Enumerators *
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={numEnumerators}
+                      onChange={(e) => setNumEnumerators(e.target.value)}
+                      className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                      Survey Window
+                    </label>
+                    <div className="w-full bg-slate-700 text-slate-100 rounded-lg px-4 py-2 border border-slate-600">
+                      {startTime && endTime
+                        ? `${startTime} - ${endTime} (${surveyDurationHours}h)`
+                        : 'Set start and end time in Step 1'}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-200 mb-2">
+                    Sampling Interval (Minutes) *
+                  </label>
+                  <select
+                    value={intervalMinutes}
+                    onChange={(e) => setIntervalMinutes(e.target.value)}
+                    className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  >
+                    <option value="5">5 minutes</option>
+                    <option value="10">10 minutes</option>
+                    <option value="15">15 minutes</option>
+                    <option value="30">30 minutes</option>
+                    <option value="60">60 minutes</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-200 mb-2">
+                    Break Interval (Minutes)
+                    <span className="ml-2 text-xs text-slate-400 font-normal">Planned pause between slots</span>
                   </label>
                   <input
                     type="number"
-                    min="1"
-                    value={numEnumerators}
-                    onChange={(e) => setNumEnumerators(e.target.value)}
+                    min="0"
+                    value={gracePeriodMinutes}
+                    onChange={(e) => setGracePeriodMinutes(e.target.value)}
                     className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-200 mb-2">
-                    Survey Window
+                  <label className="block text-sm font-medium text-slate-200 mb-3">
+                    <Car size={16} className="inline mr-2" />
+                    Vehicle Categories *
                   </label>
-                  <div className="w-full bg-slate-700 text-slate-100 rounded-lg px-4 py-2 border border-slate-600">
-                    {startTime && endTime ? `${startTime} - ${endTime} (${surveyDurationHours}h)` : 'Set start and end time in Step 1'}
+                  <div className="grid grid-cols-2 gap-3">
+                    {VEHICLE_CATEGORIES.map(category => (
+                      <button
+                        key={category.key}
+                        onClick={() => handleCategoryToggle(category.key)}
+                        className={`p-3 rounded-lg font-medium transition-all text-left ${
+                          selectedCategories.includes(category.key)
+                            ? 'bg-blue-500 text-white ring-2 ring-blue-300'
+                            : 'bg-slate-700 text-slate-200 hover:bg-slate-600'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }} />
+                          {category.label}
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">
-                  Sampling Interval (Minutes) *
-                </label>
-                <select
-                  value={intervalMinutes}
-                  onChange={(e) => setIntervalMinutes(e.target.value)}
-                  className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                >
-                  <option value="5">5 minutes</option>
-                  <option value="10">10 minutes</option>
-                  <option value="15">15 minutes</option>
-                  <option value="30">30 minutes</option>
-                  <option value="60">60 minutes</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">
-                  Break Interval (Minutes)
-                  <span className="ml-2 text-xs text-slate-400 font-normal">Planned pause between slots</span>
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={gracePeriodMinutes}
-                  onChange={(e) => setGracePeriodMinutes(e.target.value)}
-                  className="w-full bg-slate-50 text-slate-900 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-200 mb-3">
-                  <Car size={16} className="inline mr-2" />
-                  Vehicle Categories *
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {VEHICLE_CATEGORIES.map(category => (
-                    <button
-                      key={category.key}
-                      onClick={() => handleCategoryToggle(category.key)}
-                      className={`p-3 rounded-lg font-medium transition-all text-left ${
-                        selectedCategories.includes(category.key)
-                          ? 'bg-blue-500 text-white ring-2 ring-blue-300'
-                          : 'bg-slate-700 text-slate-200 hover:bg-slate-600'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: category.color }}
-                        />
-                        {category.label}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Time Slots Preview */}
-              <div className="bg-slate-700 rounded-lg p-4">
-                <h3 className="text-sm font-bold text-slate-200 mb-3 flex items-center gap-2">
-                  <Clock size={16} />
-                  Generated Schedule Preview ({generatedSlots.length} slots)
-                </h3>
-                <div className="space-y-1 max-h-52 overflow-y-auto pr-1">
-                  {generatedSlots.map((slot, idx) => {
-                    const breakMins = slot.break_after_minutes;
-                    const hasBreak = breakMins > 0 && idx < generatedSlots.length - 1;
-                    return (
-                      <div key={slot.slot_number}>
-                        <div className="flex items-center gap-2 bg-slate-600 px-3 py-2 rounded-lg">
-                          <div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
-                          <span className="text-xs font-semibold text-slate-100">Slot {slot.slot_number}</span>
-                          <span className="text-xs text-slate-300 ml-auto">
-                            {formatTimeLabel(slot.start_time)} – {formatTimeLabel(slot.end_time)}
-                          </span>
-                        </div>
-                        {hasBreak && (
-                          <div className="flex items-center gap-2 px-3 py-1">
-                            <div className="w-px h-4 bg-amber-500/40 ml-0.5" />
-                            <span className="text-[11px] text-amber-400">⏳ Break {breakMins}m</span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Review & Create */}
-          {step === 3 && (
-            <div className="p-8 space-y-6">
-              <h2 className="text-xl font-bold text-white mb-6">Review & Create</h2>
-
-              <LocationPicker
-                locationName={locationName}
-                latitude={latitude}
-                longitude={longitude}
-                onLocationNameChange={setLocationName}
-                onLatitudeChange={setLatitude}
-                onLongitudeChange={setLongitude}
-                readOnly
-              />
-
-              {/* Summary Card */}
-              <div className="grid grid-cols-2 gap-4">
+                {/* Time Slots Preview */}
                 <div className="bg-slate-700 rounded-lg p-4">
-                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Project Name</p>
-                  <p className="text-lg font-bold text-white">{projectName}</p>
-                </div>
-                <div className="bg-slate-700 rounded-lg p-4">
-                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Client</p>
-                  <p className="text-lg font-bold text-white">{clientName || '—'}</p>
-                </div>
-                <div className="bg-slate-700 rounded-lg p-4">
-                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Survey Date</p>
-                  <p className="text-lg font-bold text-white">{surveyDate}</p>
-                </div>
-                <div className="bg-slate-700 rounded-lg p-4">
-                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Survey Window</p>
-                  <p className="text-lg font-bold text-white">{startTime} - {endTime}</p>
-                </div>
-                <div className="bg-slate-700 rounded-lg p-4">
-                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Interval</p>
-                  <p className="text-lg font-bold text-white">{surveyDurationHours}h / {intervalMinutes}min slots</p>
-                  <p className="text-xs text-slate-300 mt-1">Break interval: {gracePeriodMinutes || 0} minutes</p>
-                </div>
-                <div className="bg-slate-700 rounded-lg p-4">
-                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Enumerators</p>
-                  <p className="text-lg font-bold text-white">{numEnumerators}</p>
-                </div>
-                <div className="bg-slate-700 rounded-lg p-4">
-                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Time Slots</p>
-                  <p className="text-lg font-bold text-white">{generatedSlots.length}</p>
-                </div>
-                <div className="col-span-2 bg-slate-700 rounded-lg p-4">
-                  <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Vehicle Categories</p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedCategories.map(cat => {
-                      const category = VEHICLE_CATEGORIES.find(c => c.key === cat);
+                  <h3 className="text-sm font-bold text-slate-200 mb-3 flex items-center gap-2">
+                    <Clock size={16} />
+                    Generated Schedule Preview ({generatedSlots.length} slots)
+                  </h3>
+                  <div className="space-y-1 max-h-52 overflow-y-auto pr-1">
+                    {generatedSlots.map((slot, idx) => {
+                      const breakMins = slot.break_after_minutes;
+                      const hasBreak = breakMins > 0 && idx < generatedSlots.length - 1;
                       return (
-                        <span key={cat} className="bg-blue-500/20 text-blue-200 text-sm px-3 py-1 rounded-full border border-blue-500/50">
-                          {category?.label}
-                        </span>
+                        <div key={slot.slot_number}>
+                          <div className="flex items-center gap-2 bg-slate-600 px-3 py-2 rounded-lg">
+                            <div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
+                            <span className="text-xs font-semibold text-slate-100">Slot {slot.slot_number}</span>
+                            <span className="text-xs text-slate-300 ml-auto">
+                              {formatTimeLabel(slot.start_time)} – {formatTimeLabel(slot.end_time)}
+                            </span>
+                          </div>
+                          {hasBreak && (
+                            <div className="flex items-center gap-2 px-3 py-1">
+                              <div className="w-px h-4 bg-amber-500/40 ml-0.5" />
+                              <span className="text-[11px] text-amber-400">⏳ Break {breakMins}m</span>
+                            </div>
+                          )}
+                        </div>
                       );
                     })}
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Navigation Buttons */}
-          <div className="bg-slate-700 px-8 py-6 flex items-center justify-between border-t border-slate-600">
-            <button
-              onClick={handlePreviousStep}
-              disabled={step === 1}
-              className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all ${
-                step === 1
-                  ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
-                  : 'bg-slate-600 text-white hover:bg-slate-500'
-              }`}
-            >
-              <ArrowLeft size={18} />
-              Previous
-            </button>
-
-            {step < 3 ? (
-              <button
-                onClick={handleNextStep}
-                className="flex items-center gap-2 px-6 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all"
-              >
-                Next
-                <ArrowLeft size={18} className="rotate-180" />
-              </button>
-            ) : (
-              <button
-                onClick={handleCreate}
-                disabled={isLoading}
-                className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all ${
-                  isLoading
-                    ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
-                    : 'bg-green-500 text-white hover:bg-green-600'
-                }`}
-              >
-                <Save size={18} />
-                {isLoading ? 'Creating...' : 'Create Project'}
-              </button>
             )}
-          </div>
-        </div>
+
+            {/* ════════════════════════════════════════════════════════════════
+                STEP 3 — Review & Create
+            ════════════════════════════════════════════════════════════════ */}
+            {step === 3 && (
+              <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+                <h2 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-6">Review & Create</h2>
+
+                <LocationPicker
+                  locationName={locationName}
+                  latitude={latitude}
+                  longitude={longitude}
+                  onLocationNameChange={setLocationName}
+                  onLatitudeChange={setLatitude}
+                  onLongitudeChange={setLongitude}
+                  readOnly
+                />
+
+                {/* Summary grid
+                    Mobile: single column   Desktop: two columns (unchanged) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                  <div className="bg-slate-700 rounded-lg p-4">
+                    <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Project Name</p>
+                    <p className="text-base md:text-lg font-bold text-white">{projectName}</p>
+                  </div>
+                  <div className="bg-slate-700 rounded-lg p-4">
+                    <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Client</p>
+                    <p className="text-base md:text-lg font-bold text-white">{clientName || '—'}</p>
+                  </div>
+                  <div className="bg-slate-700 rounded-lg p-4">
+                    <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Survey Date</p>
+                    <p className="text-base md:text-lg font-bold text-white">{surveyDate}</p>
+                  </div>
+                  <div className="bg-slate-700 rounded-lg p-4">
+                    <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Survey Window</p>
+                    <p className="text-base md:text-lg font-bold text-white">{startTime} - {endTime}</p>
+                  </div>
+                  <div className="bg-slate-700 rounded-lg p-4">
+                    <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Interval</p>
+                    <p className="text-base md:text-lg font-bold text-white">{surveyDurationHours}h / {intervalMinutes}min slots</p>
+                    <p className="text-xs text-slate-300 mt-1">Break interval: {gracePeriodMinutes || 0} minutes</p>
+                  </div>
+                  <div className="bg-slate-700 rounded-lg p-4">
+                    <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Enumerators</p>
+                    <p className="text-base md:text-lg font-bold text-white">{numEnumerators}</p>
+                  </div>
+                  <div className="bg-slate-700 rounded-lg p-4">
+                    <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Time Slots</p>
+                    <p className="text-base md:text-lg font-bold text-white">{generatedSlots.length}</p>
+                  </div>
+                  {/* Full width on both mobile and desktop */}
+                  <div className="md:col-span-2 bg-slate-700 rounded-lg p-4">
+                    <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Vehicle Categories</p>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedCategories.map(cat => {
+                        const category = VEHICLE_CATEGORIES.find(c => c.key === cat);
+                        return (
+                          <span key={cat} className="bg-blue-500/20 text-blue-200 text-sm px-3 py-1 rounded-full border border-blue-500/50">
+                            {category?.label}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── Desktop navigation buttons — hidden on mobile ────────────── */}
+            <div className="hidden md:flex bg-slate-700 px-8 py-6 items-center justify-between border-t border-slate-600">
+              <button
+                onClick={handlePreviousStep}
+                disabled={step === 1}
+                className={prevBtnClass(step === 1)}
+              >
+                <ArrowLeft size={18} />
+                Previous
+              </button>
+
+              {step < 3 ? (
+                <button
+                  onClick={handleNextStep}
+                  className="flex items-center gap-2 px-6 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all"
+                >
+                  Next
+                  <ArrowLeft size={18} className="rotate-180" />
+                </button>
+              ) : (
+                <button
+                  onClick={handleCreate}
+                  disabled={isLoading}
+                  className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all ${
+                    isLoading ? 'bg-slate-600 text-slate-400 cursor-not-allowed' : 'bg-green-500 text-white hover:bg-green-600'
+                  }`}
+                >
+                  <Save size={18} />
+                  {isLoading ? 'Creating...' : 'Create Project'}
+                </button>
+              )}
+            </div>
+
+          </div>{/* /form card */}
+        </div>{/* /max-w-4xl */}
+      </div>{/* /scrollable content */}
+
+      {/* ── Mobile sticky bottom navigation — hidden on desktop ─────────────
+          position:fixed so it always sits at the viewport bottom.
+          The pb-24 on the content div above keeps the last form field visible.
+      ──────────────────────────────────────────────────────────────────────── */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700 px-4 py-3 flex gap-3">
+        <button
+          onClick={handlePreviousStep}
+          disabled={step === 1}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm transition-all ${
+            step === 1
+              ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+              : 'bg-slate-700 text-white hover:bg-slate-600'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Back
+        </button>
+
+        {step < 3 ? (
+          <button
+            onClick={handleNextStep}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm bg-blue-500 text-white hover:bg-blue-600 transition-all"
+          >
+            Next Step
+            <ArrowLeft size={16} className="rotate-180" />
+          </button>
+        ) : (
+          <button
+            onClick={handleCreate}
+            disabled={isLoading}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm transition-all ${
+              isLoading ? 'bg-slate-600 text-slate-400 cursor-not-allowed' : 'bg-green-500 text-white hover:bg-green-600'
+            }`}
+          >
+            <Save size={16} />
+            {isLoading ? 'Creating...' : 'Create Project'}
+          </button>
+        )}
       </div>
-    </div>
+    </>
   );
 }

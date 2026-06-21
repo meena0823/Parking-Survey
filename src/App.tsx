@@ -9,7 +9,6 @@ import TeamHeadDashboard from './components/TeamHeadDashboard';
 import SurveyProjectForm from './components/SurveyProjectForm';
 import ProjectsList from './components/ProjectsList';
 import ProjectDetail from './components/ProjectDetail';
-import LiveMonitoring from './components/LiveMonitoring';
 import ResultsPage from './components/ResultsPage';
 import ReportGenerator from './components/ReportGenerator';
 import EnumeratorInterface from './components/EnumeratorInterface';
@@ -41,7 +40,7 @@ function clearEnumeratorSession() {
 // ─────────────────────────────────────────────────────────────
 
 type AppView = 'landing' | 'team-head-auth' | 'enumerator-join' | 'admin-auth' | 'team-head-app' | 'enumerator-app' | 'admin-app';
-type TeamHeadView = 'dashboard' | 'projects' | 'create-project' | 'project-detail' | 'monitoring' | 'results' | 'reports';
+type TeamHeadView = 'dashboard' | 'projects' | 'create-project' | 'project-detail' | 'results' | 'reports';
 
 function AppContent() {
   const { user, teamHead, role, loading } = useAuth();
@@ -99,7 +98,6 @@ function AppContent() {
 
   function handleTeamHeadNavigate(viewStr: string, data?: any) {
     if (data && viewStr === 'project-detail') { setSelectedProject(data as SurveyProject); setTeamHeadView('project-detail'); }
-    else if (viewStr === 'monitoring') { if (data) setSelectedProject(data as SurveyProject); setTeamHeadView('monitoring'); }
     else if (viewStr === 'results') { if (data) setSelectedProject(data as SurveyProject); setTeamHeadView('results'); }
     else if (viewStr === 'reports') { if (data) setSelectedProject(data as SurveyProject); setTeamHeadView('reports'); }
     else setTeamHeadView(viewStr as TeamHeadView);
@@ -149,7 +147,6 @@ function AppContent() {
           {teamHeadView === 'projects' && <ProjectsList onNavigate={handleTeamHeadNavigate} />}
           {teamHeadView === 'create-project' && <SurveyProjectForm onBack={() => setTeamHeadView('dashboard')} onCreated={(p) => { setSelectedProject(p); setTeamHeadView('project-detail'); }} />}
           {teamHeadView === 'project-detail' && selectedProject && <ProjectDetail project={selectedProject} onBack={() => setTeamHeadView('projects')} onNavigate={handleTeamHeadNavigate} />}
-          {teamHeadView === 'monitoring' && <LiveMonitoring project={selectedProject} onBack={() => setTeamHeadView('project-detail')} />}
           {teamHeadView === 'results' && <ResultsPage project={selectedProject} onBack={() => setTeamHeadView('project-detail')} />}
           {teamHeadView === 'reports' && <ReportGenerator project={selectedProject} onBack={() => setTeamHeadView('project-detail')} />}
         </TeamHeadLayout>

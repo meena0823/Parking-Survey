@@ -7,7 +7,15 @@ import type {
 // --- Team Head ---
 
 export async function getTeamHead(userId: string): Promise<TeamHead | null> {
-  const { data } = await supabase.from('team_heads').select('*').eq('user_id', userId).maybeSingle();
+  const { data, error } = await supabase
+    .from('team_heads')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) {
+    console.error('[getTeamHead] Supabase error:', error.message, '| code:', error.code, '| hint:', error.hint);
+  }
+  console.log('[getTeamHead] user_id=%s found=%s', userId, !!data);
   return data;
 }
 
@@ -17,22 +25,51 @@ export async function createTeamHead(
   organization?: string,
   phone?: string
 ): Promise<TeamHead | null> {
+  // ── Verify the active session identity BEFORE the insert ─────────────────
+  // auth.uid() inside Supabase RLS must equal the user_id we are inserting.
+  // If the session is missing or belongs to a different user the INSERT will
+  // be rejected with a 42501 RLS violation.
+  const { data: sessionData } = await supabase.auth.getSession();
+  const sessionUserId = sessionData?.session?.user?.id ?? null;
+  const accessTokenPreview = sessionData?.session?.access_token
+    ? sessionData.session.access_token.slice(0, 24) + '…'
+    : null;
+
+  console.log(
+    '[createTeamHead] PRE-INSERT auth check',
+    '\n  → user_id to insert :', userId,
+    '\n  → session user_id   :', sessionUserId,
+    '\n  → ids match         :', userId === sessionUserId,
+    '\n  → access_token      :', accessTokenPreview ?? 'NONE (unauthenticated)',
+  );
+
+  const payload = {
+    user_id: userId,
+    full_name: fullName,
+    organization: organization ?? null,
+    phone: phone ?? null,
+  };
+  console.log('[createTeamHead] INSERT payload:', JSON.stringify(payload));
+
   const { data, error } = await supabase
     .from('team_heads')
-    .insert({
-      user_id: userId,
-      full_name: fullName,
-      organization,
-      phone,
-    })
+    .insert(payload)
     .select()
     .single();
 
-  console.log('createTeamHead data:', data);
-  console.log('createTeamHead error:', error);
+  if (error) {
+    console.error(
+      '[createTeamHead] INSERT FAILED',
+      '\n  → message :', error.message,
+      '\n  → code    :', error.code,
+      '\n  → hint    :', error.hint,
+      '\n  → details :', error.details,
+      '\n  → full    :', JSON.stringify(error),
+    );
+    throw error;
+  }
 
-  if (error) throw error;
-
+  console.log('[createTeamHead] INSERT SUCCESS — team_head id:', data?.id);
   return data;
 }
 // --- Survey Projects ---
@@ -170,18 +207,38 @@ export async function updateRoom(roomId: string, updates: Partial<SurveyRoom>): 
 // --- Slot Completions ---
 
 export async function getSlotCompletions(projectId: string): Promise<SlotCompletion[]> {
-  const { data } = await supabase.from('slot_completions').select('*').eq('project_id', projectId);
+  const { data, error } = await supabase.from('slot_completions').select('*').eq('project_id', projectId);
+  if (error) {
+    console.error('[getSlotCompletions] Supabase error:', error.message, '| code:', error.code);
+  }
+  console.log('[getSlotCompletions] project=%s rows=%d', projectId, data?.length ?? 0);
   return data ?? [];
 }
 
 export async function upsertSlotCompletion(
   completion: Omit<SlotCompletion, 'id' | 'created_at'>
 ): Promise<SlotCompletion | null> {
-  const { data } = await supabase
+  console.log('[upsertSlotCompletion] Writing:', {
+    slot_id: completion.slot_id,
+    enumerator_id: completion.enumerator_id,
+    status: completion.status,
+    completed_at: completion.completed_at,
+  });
+  const { data, error } = await supabase
     .from('slot_completions')
     .upsert(completion, { onConflict: 'slot_id,enumerator_id' })
     .select()
     .maybeSingle();
+  if (error) {
+    console.error(
+      '[upsertSlotCompletion] Supabase error:', error.message,
+      '| code:', error.code,
+      '| hint:', error.hint,
+      '| details:', error.details,
+    );
+  } else {
+    console.log('[upsertSlotCompletion] Success — saved id:', data?.id);
+  }
   return data;
 }
 

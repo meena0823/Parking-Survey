@@ -8,7 +8,7 @@ import {
 import type { SurveyProject, SurveySlot, Enumerator, SurveyRoom, VehicleCapture, SlotCompletion } from '../lib/types';
 import { VEHICLE_CATEGORIES } from '../lib/types';
 import {
-  ArrowLeft, Clock, Users, Camera, Play, Copy, Check, Radio, Wifi, Battery,
+  ArrowLeft, Clock, Users, Camera, Play, Copy, Check, Wifi, Battery,
   Map as MapIcon, BarChart3, MessageSquare, ChevronLeft, ChevronRight,
   AlertTriangle, Pencil, X, Bell, Timer, ChevronDown, ChevronUp,
 } from 'lucide-react';
@@ -96,7 +96,12 @@ export default function ProjectDetail({ project, onBack, onNavigate }: Props) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'survey_slots', filter: `project_id=eq.${project.id}` },
         async () => setSlots(await getSlots(project.id)))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'slot_completions', filter: `project_id=eq.${project.id}` },
-        async () => setSlotCompletions(await getSlotCompletions(project.id)))
+        async (payload) => {
+          console.log('[ProjectDetail] slot_completions realtime event received:', payload.eventType, payload.new);
+          const updated = await getSlotCompletions(project.id);
+          console.log('[ProjectDetail] slot_completions refreshed:', updated.length, 'records');
+          setSlotCompletions(updated);
+        })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'enumerators', filter: `project_id=eq.${project.id}` },
         async () => setEnumerators(await getEnumerators(project.id)))
       .subscribe();
@@ -926,8 +931,7 @@ export default function ProjectDetail({ project, onBack, onNavigate }: Props) {
       )}
 
       {/* ── Navigation ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <button onClick={() => onNavigate('monitoring', project)} className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow text-left"><Radio className="w-6 h-6 text-blue-500 mb-2" /><p className="font-medium text-slate-900 text-sm">Live Monitor</p><p className="text-xs text-slate-500">Real-time tracking</p></button>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <button onClick={() => onNavigate('results', project)} className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow text-left"><BarChart3 className="w-6 h-6 text-emerald-500 mb-2" /><p className="font-medium text-slate-900 text-sm">Results</p><p className="text-xs text-slate-500">Analytics dashboard</p></button>
         <button onClick={() => onNavigate('reports', project)} className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow text-left"><MapIcon className="w-6 h-6 text-amber-500 mb-2" /><p className="font-medium text-slate-900 text-sm">Reports</p><p className="text-xs text-slate-500">Generate PDF/CSV</p></button>
         <button className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow text-left"><MessageSquare className="w-6 h-6 text-rose-500 mb-2" /><p className="font-medium text-slate-900 text-sm">Chat</p><p className="text-xs text-slate-500">Communicate</p></button>
