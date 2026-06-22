@@ -246,12 +246,14 @@ export function EnumeratorJoin({ onBack, onJoined }: EnumeratorJoinProps) {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Mobile Number</label>
                 <input
-                  type="tel"
+                  type="text"
+                  inputMode="tel"
+                  autoComplete="tel"
                   value={mobile}
                   onChange={e => setMobile(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-sm"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-sm text-slate-900"
                   required
-                  placeholder="+91..."
+                  placeholder="e.g. 9876543210"
                 />
               </div>
               <button

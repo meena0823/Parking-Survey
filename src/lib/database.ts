@@ -162,14 +162,38 @@ export async function getEnumeratorById(enumId: string): Promise<Enumerator | nu
  * Used to detect returning enumerators and prevent duplicate records.
  */
 export async function findEnumeratorByMobile(projectId: string, mobile: string): Promise<Enumerator | null> {
-  const { data } = await supabase
+  const trimmed = mobile.trim();
+
+  // Try exact match first
+  const { data: exact } = await supabase
     .from('enumerators')
     .select('*')
     .eq('project_id', projectId)
-    .eq('mobile', mobile)
+    .eq('mobile', trimmed)
     .order('joined_at', { ascending: true })
     .limit(1);
-  return data?.[0] ?? null;
+  if (exact?.[0]) return exact[0];
+
+  // Fallback: compare digits only — handles +91XXXXXXXXXX vs XXXXXXXXXX, spaces, dashes, etc.
+  const inputDigits = trimmed.replace(/\D/g, '');
+  if (inputDigits.length < 7) return null;
+
+  const { data: all } = await supabase
+    .from('enumerators')
+    .select('*')
+    .eq('project_id', projectId)
+    .order('joined_at', { ascending: true });
+
+  return (
+    all?.find(e => {
+      const storedDigits = (e.mobile ?? '').replace(/\D/g, '');
+      return (
+        storedDigits === inputDigits ||
+        storedDigits.endsWith(inputDigits) ||
+        inputDigits.endsWith(storedDigits)
+      );
+    }) ?? null
+  );
 }
 
 export async function createEnumerator(enumerator: Omit<Enumerator, 'id' | 'joined_at'>): Promise<Enumerator | null> {
