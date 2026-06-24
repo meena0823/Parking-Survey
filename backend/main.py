@@ -20,12 +20,9 @@ import database as db
 import analytics
 
 # ── Survey-app vehicle type mapping ──────────────────────────
-# Maps ParkSense/YOLO class names to the SurveyFlow key set used in
-# vehicle_captures.vehicle_type.
-# The second block handles PR-only detections whose vehicle_class is already
-# a survey key (e.g. "car", "two_wheeler") — identity pass-through.
+# Maps Plate Recognizer parking survey categories to the SurveyFlow key set
+# used in vehicle_captures.vehicle_type.
 _SURVEY_CLASS_MAP: dict[str, str] = {
-    # YOLO / Indian-model class names
     "Motorcycle":    "two_wheeler",
     "Bike":          "two_wheeler",
     "Bicycle":       "two_wheeler",
@@ -34,13 +31,6 @@ _SURVEY_CLASS_MAP: dict[str, str] = {
     "Bus":           "bus",
     "Truck":         "truck",
     "LCV":           "lcv",
-    # Plate Recognizer-only detections already carry survey keys
-    "two_wheeler":   "two_wheeler",
-    "car":           "car",
-    "auto":          "auto",
-    "bus":           "bus",
-    "truck":         "truck",
-    "lcv":           "lcv",
     "others":        "others",
 }
 
@@ -176,10 +166,10 @@ async def detect_vehicles(
     timestamp: str = Form(None),
 ):
     """
-    Run the CV pipeline (YOLO + Plate Recognizer) on a single camera frame.
+    Run the Plate Recognizer pipeline on a single camera frame.
 
     Returns all detected vehicles with:
-      - SurveyFlow vehicle_type key (YOLO primary, Plate Recognizer fallback)
+      - SurveyFlow vehicle_type key mapped from Plate Recognizer category
       - Plate Recognizer enrichment: vehicle_number, make, model, color,
         plate_confidence, detailed_vehicle_type, orientation
 
@@ -202,7 +192,6 @@ async def detect_vehicles(
         for det in raw_detections:
             survey_type = _SURVEY_CLASS_MAP.get(det["vehicle_class"], "others")
             plate = det.get("license_plate") or "UNREADABLE"
-            # vehicle_number: prefer Plate Recognizer plate, fall back to OCR plate
             vehicle_number = det.get("vehicle_number") or (
                 plate if plate != "UNREADABLE" else None
             )

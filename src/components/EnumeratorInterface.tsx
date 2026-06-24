@@ -296,7 +296,11 @@ export default function EnumeratorInterface({ enumeratorId, project, onLogout }:
     }
 
     getMlStatus().then(status => {
-      setMlOnline(status?.status === 'online' && status.pipeline.yolo_available === true);
+      setMlOnline(
+        status?.status === 'online' &&
+        (status.pipeline.plate_recognizer_enabled === true ||
+          status.pipeline.mode === 'plate_recognizer_only')
+      );
     });
 
     const channel = supabase

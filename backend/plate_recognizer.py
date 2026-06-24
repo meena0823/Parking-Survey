@@ -19,35 +19,34 @@ logger = logging.getLogger(__name__)
 
 _TOKEN: str = os.getenv("PLATE_RECOGNIZER_TOKEN", "")
 
-# ── Plate Recognizer vehicle type → SurveyFlow category ──────────────────────
-# Raw PR categories are mapped to the six survey categories used in all reports.
-_PR_SURVEY_MAP: dict[str, str] = {
-    # Car variants → car
-    "Sedan":         "car",
-    "SUV":           "car",
-    "Hatchback":     "car",
-    "Coupe":         "car",
-    "Convertible":   "car",
-    # Two-wheelers → two_wheeler
-    "Motorcycle":    "two_wheeler",
-    "Scooter":       "two_wheeler",
-    # Three-wheelers → auto
-    "Auto-Rickshaw": "auto",
-    "Auto Rickshaw": "auto",
+# Plate Recognizer vehicle type → parking survey category
+_PR_CATEGORY_MAP: dict[str, str] = {
+    # Car variants
+    "Sedan": "Car",
+    "SUV": "Car",
+    "Hatchback": "Car",
+    "Coupe": "Car",
+    "Convertible": "Car",
+    "Van": "Car",
+    # Two-wheelers
+    "Motorcycle": "Motorcycle",
+    "Scooter": "Motorcycle",
+    "Bicycle": "Bicycle",
+    # Three-wheelers
+    "Auto-Rickshaw": "Auto-Rickshaw",
+    "Auto Rickshaw": "Auto-Rickshaw",
     # Heavy vehicles
-    "Bus":           "bus",
-    "Truck":         "truck",
-    # Light Commercial Vehicles → lcv
-    "Pickup":        "lcv",
-    "Van":           "lcv",
+    "Bus": "Bus",
+    "Truck": "Truck",
+    "Pickup": "Truck",
     # Fallback
-    "Unknown":       "others",
+    "Unknown": "Car",
 }
 
 
-def map_pr_to_survey(pr_type: str) -> str:
-    """Map a Plate Recognizer vehicle type string to the SurveyFlow category key."""
-    return _PR_SURVEY_MAP.get(pr_type, "others")
+def map_pr_to_category(pr_type: str) -> str:
+    """Map a Plate Recognizer vehicle type string to a parking survey category."""
+    return _PR_CATEGORY_MAP.get(pr_type, "Car")
 
 
 def recognize_plates(image_path: str) -> list[dict]:
@@ -58,14 +57,14 @@ def recognize_plates(image_path: str) -> list[dict]:
         plate_number          str | None   — uppercase plate text (None if undetected)
         plate_confidence      float        — 0–1 confidence for the plate reading
         detailed_vehicle_type str          — raw PR type: Sedan, SUV, Motorcycle, etc.
-        pr_vehicle_type       str          — mapped SurveyFlow key (car, two_wheeler …)
+        vehicle_class         str          — survey category: Car, Motorcycle, Bus, …
         vehicle_make          str | None
         vehicle_model         str | None
         vehicle_color         str | None
         orientation           str | None   — Front | Rear | Unknown
         bbox_xyxy             tuple[int]   — (xmin, ymin, xmax, ymax) of vehicle box
 
-    Returns an empty list on any failure.  Never raises.
+    Returns an empty list on any failure. Never raises.
     """
     if not _TOKEN:
         logger.warning("PLATE_RECOGNIZER_TOKEN not set — Plate Recognizer disabled")
@@ -99,18 +98,14 @@ def recognize_plates(image_path: str) -> list[dict]:
 
         detections: list[dict] = []
         for result in results:
-            # ── Plate ────────────────────────────────────────────
             plate_raw = result.get("plate", "")
             plate_clean: Optional[str] = plate_raw.upper().strip() if plate_raw else None
             score = float(result.get("score", 0.0))
 
-            # ── Vehicle type ─────────────────────────────────────
             vehicle = result.get("vehicle") or {}
             pr_type: str = vehicle.get("type") or "Unknown"
             vbox = vehicle.get("box") or {}
 
-            # ── Make / Model ─────────────────────────────────────
-            # Plate Recognizer may use "model_make" or "make_model" key.
             mm_list = result.get("model_make") or result.get("make_model") or []
             make: Optional[str] = None
             model: Optional[str] = None
@@ -120,7 +115,6 @@ def recognize_plates(image_path: str) -> list[dict]:
                 top = mm_list[0]
                 make = top.get("make") or None
                 model = top.get("model") or None
-                # Color can be nested inside the make/model entry or at the top level.
                 color_list = top.get("color") or result.get("color") or []
                 if color_list:
                     color = color_list[0].get("color") or None
@@ -129,13 +123,11 @@ def recognize_plates(image_path: str) -> list[dict]:
                 if color_list:
                     color = color_list[0].get("color") or None
 
-            # ── Orientation ──────────────────────────────────────
             orient_list = result.get("orientation") or []
             orientation: Optional[str] = (
                 orient_list[0].get("orientation") if orient_list else None
             )
 
-            # ── Vehicle bounding box → xyxy ──────────────────────
             bbox_xyxy = (
                 int(vbox.get("xmin", 0)),
                 int(vbox.get("ymin", 0)),
@@ -144,15 +136,15 @@ def recognize_plates(image_path: str) -> list[dict]:
             )
 
             detections.append({
-                "plate_number":           plate_clean,
-                "plate_confidence":       round(score, 4),
-                "detailed_vehicle_type":  pr_type,
-                "pr_vehicle_type":        map_pr_to_survey(pr_type),
-                "vehicle_make":           make,
-                "vehicle_model":          model,
-                "vehicle_color":          color,
-                "orientation":            orientation,
-                "bbox_xyxy":              bbox_xyxy,
+                "plate_number": plate_clean,
+                "plate_confidence": round(score, 4),
+                "detailed_vehicle_type": pr_type,
+                "vehicle_class": map_pr_to_category(pr_type),
+                "vehicle_make": make,
+                "vehicle_model": model,
+                "vehicle_color": color,
+                "orientation": orientation,
+                "bbox_xyxy": bbox_xyxy,
             })
 
         return detections

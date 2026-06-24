@@ -48,7 +48,7 @@ export interface MlPipelineStatus {
   yolo_available: boolean;
   ocr_available: boolean;
   plate_recognizer_enabled: boolean;
-  mode: 'real' | 'unavailable';
+  mode: 'real' | 'unavailable' | 'plate_recognizer_only';
 }
 
 export interface MlStatusResponse {
@@ -70,7 +70,7 @@ function makeFetch(url: string, init: RequestInit, timeoutMs: number): Promise<R
 // ── Public API ───────────────────────────────────────────────
 
 /**
- * Check whether the ML backend is reachable and YOLO is loaded.
+ * Check whether the ML backend is reachable and Plate Recognizer is enabled.
  * Returns null if the server is offline or VITE_ML_API_URL is not set.
  */
 export async function getMlStatus(timeoutMs = 3000): Promise<MlStatusResponse | null> {
